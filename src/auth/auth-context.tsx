@@ -6,8 +6,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User,
-  AuthError,
-  AuthErrorCodes
+  // AuthError,
+  // AuthErrorCodes
 } from "firebase/auth";
 import axios, { AxiosError } from "axios";
 

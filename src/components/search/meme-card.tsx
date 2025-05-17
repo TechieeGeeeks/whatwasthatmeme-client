@@ -21,7 +21,7 @@ export interface MemeCardProps {
   type: "gifs" | "pngs";
 }
 
-const MemeCard: React.FC<MemeCardProps> = ({ memeId, index, type }) => {
+const MemeCard: React.FC<MemeCardProps> = ({ memeId, type }) => {
   const router = useRouter();
   const [imageLoaded, setImageLoaded] = React.useState<boolean>(false);
 

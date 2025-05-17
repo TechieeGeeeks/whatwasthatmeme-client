@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/auth/auth-context";
 import NotLoggedIn from "@/auth/not-logged-in";
-import { useMemesSearch, MemeType } from "@/hooks/use-meme-search";
+import { useMemesSearch } from "@/hooks/use-meme-search";
 import { MemeSkeleton } from "@/components/skeletons/meme-skeleton";
 
 const SearchMeme: React.FC = () => {

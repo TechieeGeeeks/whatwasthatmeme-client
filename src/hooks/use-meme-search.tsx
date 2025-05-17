@@ -1,7 +1,12 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import axios from "axios";
-import { transformData } from "@/utils/transformData";
+import { 
+  transformData, 
+  GifApiResponse, 
+  MemeApiResponse, 
+  // TransformResult 
+} from "@/utils/transformData";
 
 export type MemeType = "gifs" | "pngs";
 
@@ -22,18 +27,9 @@ export interface MemeGalleryMemeData {
   height?: number;
 }
 
-interface TransformResult {
-  result: SearchMemeMemeData[];
-  nextValue: string | undefined;
-}
-
-interface GifApiResponse {
-  results: any[];
-  next?: string;
-}
-
-interface MemeApiResponse {
-  results: any[];
+// Firebase User type interface
+interface FirebaseUser {
+  getIdToken: () => Promise<string>;
 }
 
 // Adapter function to convert SearchMemeMemeData to MemeGalleryMemeData
@@ -73,7 +69,7 @@ export function useMemesSearch(initialQuery = "", initialType = "gifs" as MemeTy
   const galleryData = adaptSearchToGalleryData(memeData);
 
   const fetchMemes = useCallback(
-    async (searchQuery: string, type: MemeType, next: string = "", pageNum: number, isLoadMore: boolean = false, user: any) => {
+    async (searchQuery: string, type: MemeType, next: string = "", pageNum: number, isLoadMore: boolean = false, user: FirebaseUser | null) => {
       if (!searchQuery.trim()) return;
       if (!user) {
         // Don't throw error, just set an error message
@@ -121,7 +117,7 @@ export function useMemesSearch(initialQuery = "", initialType = "gifs" as MemeTy
           data = { results: response.data.results };
         }
         
-        const transformedData = await transformData(data, type) as TransformResult;
+        const transformedData = await transformData(data, type);
         
         // Update the current query reference before updating state
         currentQueryRef.current.inputTxt = searchQuery;
@@ -153,9 +149,9 @@ export function useMemesSearch(initialQuery = "", initialType = "gifs" as MemeTy
             ? !!transformedData.nextValue
             : transformedData.result.length > 0
         );
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Error fetching ${type}:`, err);
-        if (err?.response?.data?.error === "Unauthorized") {
+        if (axios.isAxiosError(err) && err.response?.data?.error === "Unauthorized") {
           setError("Session expired. Please log in again.");
         } else {
           setError(`Failed to fetch ${type}. Please try again later.`);
@@ -181,7 +177,7 @@ export function useMemesSearch(initialQuery = "", initialType = "gifs" as MemeTy
     }
   };
 
-  const handleLoadMore = (user: any) => {
+  const handleLoadMore = (user: FirebaseUser | null) => {
     if (hasMore && user && !isLoading && !currentQueryRef.current.fetchInProgress) {
       // This is explicitly a load more operation
       if (memeType === "gifs") {
@@ -208,7 +204,7 @@ export function useMemesSearch(initialQuery = "", initialType = "gifs" as MemeTy
     }
   };
 
-  const performSearch = useCallback((query: string, type: MemeType, user: any) => {
+  const performSearch = useCallback((query: string, type: MemeType, user: FirebaseUser | null) => {
     // Check if the search query or meme type has changed
     const hasQueryChanged = 
       query !== currentQueryRef.current.inputTxt || 

@@ -1,4 +1,5 @@
 import { Dela_Gothic_One } from "next/font/google";
+import Link from "next/link";
 import React from "react";
 
 const delaGothicOne = Dela_Gothic_One({
@@ -8,9 +9,9 @@ const delaGothicOne = Dela_Gothic_One({
 
 const BrandLogo: React.FC = () => {
   return (
-    <a href="/" className={delaGothicOne.className}>
+    <Link href="/" className={delaGothicOne.className}>
       <p className="md:text-2xl hover:text-[#3300FF]">WhatWasThatMeme.org</p>
-    </a>
+    </Link>
   );
 };
 
