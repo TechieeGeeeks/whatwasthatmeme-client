@@ -9,7 +9,7 @@ const delaGothicOne = Dela_Gothic_One({
 const BrandLogo: React.FC = () => {
   return (
     <a href="/" className={delaGothicOne.className}>
-      <p className="md:text-2xl hover:text-main">WhatWasThatMeme.org</p>
+      <p className="md:text-2xl hover:text-[#3300FF]">WhatWasThatMeme.org</p>
     </a>
   );
 };

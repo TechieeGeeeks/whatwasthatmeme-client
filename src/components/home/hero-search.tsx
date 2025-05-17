@@ -21,7 +21,7 @@ const HeroSearchField = ({ searchQuery, setSearchQuery, handleSubmit }: HeroSear
         <Input
           type="search"
           placeholder="What do you want to search?"
-          className="rounded-full pl-4 pr-10 py-2 w-full"
+          className=" pl-4 pr-10 py-2 w-full"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           required
@@ -36,7 +36,7 @@ const HeroSearchField = ({ searchQuery, setSearchQuery, handleSubmit }: HeroSear
       </div>
       <Button
         type="submit"
-      className="rounded-full px-8 bg-[#3300FF] hover:bg-[#3300FF]/90 text-white w-full md:w-auto cursor-pointer"
+      className=" px-8 bg-[#3300FF] hover:bg-[#3300FF]/90 text-white w-full md:w-auto cursor-pointer"
       >
         Search
       </Button>

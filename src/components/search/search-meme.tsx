@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useDebounce } from "use-debounce";
@@ -77,7 +77,7 @@ const MemeSkeleton: React.FC = () => {
       {Array.from({ length: 8 }).map((_, i) => (
         <div 
           key={i} 
-          className="bg-gray-200 animate-pulse rounded-lg h-40"
+          className="shadow-shadow animate-pulse bg-white border-2 h-48"
         />
       ))}
     </div>
@@ -102,12 +102,20 @@ const SearchMeme: React.FC = () => {
   const [nextValue, setNextValue] = useState<string>("");
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
+  
+  // Store a stable reference to the current query parameters
+  const currentQueryRef = useRef({
+    inputTxt: "",
+    memeType: memeType as MemeType,
+    fetchInProgress: false,
+    lastResponseLength: 0
+  });
 
   // Convert memeData to format expected by MemeGallery
   const galleryData = adaptSearchToGalleryData(memeData);
 
   const fetchMemes = useCallback(
-    async (searchQuery: string, type: MemeType, next: string = "", pageNum: number) => {
+    async (searchQuery: string, type: MemeType, next: string = "", pageNum: number, isLoadMore: boolean = false) => {
       if (!searchQuery.trim()) return;
       if (!user) {
         // Don't throw error, just set an error message
@@ -115,8 +123,14 @@ const SearchMeme: React.FC = () => {
         return;
       }
       
+      // Prevent multiple simultaneous fetches
+      if (currentQueryRef.current.fetchInProgress) {
+        return;
+      }
+      
       setIsLoading(true);
       setError(null);
+      currentQueryRef.current.fetchInProgress = true;
 
       try {
         let endpoint: string;
@@ -151,9 +165,27 @@ const SearchMeme: React.FC = () => {
         
         const transformedData = await transformData(data, type) as TransformResult;
         
-        if (next || pageNum > 1) {
-          setMemeData((prevData) => [...prevData, ...transformedData.result]);
+        // Update the current query reference before updating state
+        currentQueryRef.current.inputTxt = searchQuery;
+        currentQueryRef.current.memeType = type;
+        currentQueryRef.current.lastResponseLength = transformedData.result.length;
+        
+        if (isLoadMore) {
+          // Important: Create a proper append operation
+          setMemeData(prevData => {
+            // Make sure we preserve the proper identity of previous data
+            const newData = [...prevData];
+            
+            // Also ensure we don't add duplicates (check by id)
+            const existingIds = new Set(newData.map(item => item.id));
+            const uniqueNewItems = transformedData.result.filter(
+              item => !existingIds.has(item.id)
+            );
+            
+            return [...newData, ...uniqueNewItems];
+          });
         } else {
+          // For new searches, completely replace data
           setMemeData(transformedData.result);
         }
         
@@ -172,6 +204,7 @@ const SearchMeme: React.FC = () => {
         }
       } finally {
         setIsLoading(false);
+        currentQueryRef.current.fetchInProgress = false;
       }
     },
     [user]
@@ -181,8 +214,17 @@ const SearchMeme: React.FC = () => {
     // Only fetch if user is logged in and not during auth loading
     if (user && !authLoading) {
       const searchQuery = debouncedInputTxt || queryFromUrl || "funny";
-      fetchMemes(searchQuery, memeType, "", 1);
-      setPage(1);
+      
+      // Check if the search query or meme type has changed
+      const hasQueryChanged = 
+        searchQuery !== currentQueryRef.current.inputTxt || 
+        memeType !== currentQueryRef.current.memeType;
+      
+      if (hasQueryChanged) {
+        // This indicates a new search, so we should reset and fetch from the beginning
+        fetchMemes(searchQuery, memeType, "", 1, false);
+        setPage(1);
+      }
     }
   }, [fetchMemes, debouncedInputTxt, queryFromUrl, memeType, pathName, user, authLoading]);
 
@@ -191,10 +233,12 @@ const SearchMeme: React.FC = () => {
   };
 
   const handleMemeTypeChange = (value: MemeType) => {
-    setMemeType(value);
-    setNextValue("");
-    setHasMore(true);
-    setPage(1);
+    if (value !== memeType) {
+      setMemeType(value);
+      setNextValue("");
+      setHasMore(true);
+      setPage(1);
+    }
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -203,17 +247,25 @@ const SearchMeme: React.FC = () => {
   };
 
   const handleLoadMore = () => {
-    if (hasMore && user) {
+    if (hasMore && user && !isLoading && !currentQueryRef.current.fetchInProgress) {
+      // This is explicitly a load more operation
       if (memeType === "gifs") {
         fetchMemes(
           inputTxt || queryFromUrl || "funny",
           memeType,
           nextValue,
-          page
+          page,
+          true // This is a load more operation
         );
       } else {
         const nextPage = page + 1;
-        fetchMemes(inputTxt || queryFromUrl || "funny", memeType, "", nextPage);
+        fetchMemes(
+          inputTxt || queryFromUrl || "funny", 
+          memeType, 
+          "", 
+          nextPage,
+          true // This is a load more operation
+        );
         setPage(nextPage);
       }
     }
@@ -253,17 +305,17 @@ const SearchMeme: React.FC = () => {
                 placeholder="Search for memes..."
                 value={inputTxt}
                 onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-black"
+                className="w-full pl-10 pr-4 py-2 "
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
             </div>
             <Select value={memeType} onValueChange={handleMemeTypeChange}>
-              <SelectTrigger className="w-[120px] md:w-[180px]">
+              <SelectTrigger className="w-[120px] md:w-[180px] bg-white">
                 <SelectValue placeholder="Meme type" />
               </SelectTrigger>
-              <SelectContent className="text-white">
-                <SelectItem value="gifs">GIFs</SelectItem>
-                <SelectItem value="pngs">PNGs</SelectItem>
+              <SelectContent className="text-black">
+                <SelectItem value="gifs" className="hover:bg-background cursor-pointer">GIFs</SelectItem>
+                <SelectItem value="pngs" className="hover:bg-background cursor-pointer">PNGs</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -287,7 +339,7 @@ const SearchMeme: React.FC = () => {
           </Alert>
         )}
 
-        {isLoading ? (
+        {isLoading && memeData.length === 0 ? (
           <div className="px-4 md:px-8">
             <MemeSkeleton />
           </div>

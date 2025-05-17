@@ -87,7 +87,7 @@ export const SocialDropdown: React.FC = () => {
           isOpen
             ? "visible top-12 opacity-100 right-1"
             : "invisible top-10 right-1 opacity-0",
-          "absolute flex w-[170px] flex-col rounded-md border-2 bg-white shadow-shadow text-lg font-base transition-all"
+          "absolute flex w-[170px] flex-col border-2 bg-main shadow-shadow text-lg font-base transition-all"
         )}
       >
         {socialLinks.map(({ icon: Icon, label, href }, index) => (
@@ -96,8 +96,8 @@ export const SocialDropdown: React.FC = () => {
             href={href}
             onClick={(e) => handleLinkClick(e, href)}
             className={clsx(
-              "text-left hover:bg-main flex items-center px-4 py-3",
-              index !== socialLinks.length - 1 && "border-b-2 border-b-black/40"
+              "text-left hover:bg-background flex items-center px-4 py-3",
+              index !== socialLinks.length - 1 && "border-b-2"
             )}
           >
             <Icon className="h-6 w-6 mr-[15px]" />
