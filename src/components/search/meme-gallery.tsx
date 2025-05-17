@@ -7,7 +7,7 @@ import MemeCard, { MemeGalleryMemeData } from "./meme-card";
 interface MemeGalleryProps {
   data: MemeGalleryMemeData[];
   type: "gifs" | "pngs";
-  prevDataLength?: number; // Track previous data length to identify new items
+  prevDataLength?: number;
 }
 
 interface ColumnItem {
@@ -24,12 +24,10 @@ const MemeGallery: React.FC<MemeGalleryProps> = ({
   const galleryRef = useRef<HTMLDivElement>(null);
   const prevDataLengthRef = useRef<number>(prevDataLength);
   
-  // Create refs for each column
   const column1Ref = useRef<HTMLDivElement>(null);
   const column2Ref = useRef<HTMLDivElement>(null);
   const column3Ref = useRef<HTMLDivElement>(null);
   
-  // Check if we're appending new items
   const isAppending = data.length > prevDataLengthRef.current;
 
   // Distribute items across columns
@@ -47,12 +45,10 @@ const MemeGallery: React.FC<MemeGalleryProps> = ({
         }, 500);
       });
       
-      // Update the previous length
       prevDataLengthRef.current = data.length;
     }
   }, [data.length, isAppending]);
 
-  // Distribute data across the columns to maintain balance
   const distributeItems = (): ColumnItem[][] => {
     const columns: ColumnItem[][] = [[], [], []]; // Max 3 columns
     
@@ -66,7 +62,6 @@ const MemeGallery: React.FC<MemeGalleryProps> = ({
       });
     }
     
-    // New items (distribute to columns)
     const newItems = data.slice(prevDataLength);
     for (let i = 0; i < newItems.length; i++) {
       columns[i % columns.length].push({
