@@ -36,7 +36,7 @@ const HeroSearchField = ({ searchQuery, setSearchQuery, handleSubmit }: HeroSear
       </div>
       <Button
         type="submit"
-        className="rounded-full px-8 bg-[#3300FF] hover:bg-[#3300FF]/90 text-white w-full md:w-auto cursor-pointer"
+      className="rounded-full px-8 bg-[#3300FF] hover:bg-[#3300FF]/90 text-white w-full md:w-auto cursor-pointer"
       >
         Search
       </Button>
