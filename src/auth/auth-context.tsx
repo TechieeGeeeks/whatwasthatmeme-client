@@ -5,15 +5,17 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  User
+  User,
+  AuthError,
+  AuthErrorCodes
 } from "firebase/auth";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  signInWithGoogle: () => Promise<User>;
+  signInWithGoogle: () => Promise<User | null>;
   signOut: () => Promise<void>;
 }
 
@@ -44,19 +46,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (response.status === 200) {
               setUser(user);
             }
-          } catch (verifyError: any) {
+          } catch (verifyError: unknown) {
             console.error("Error verifying token:", verifyError);
-            
-            // Handle 404 error specifically - API route doesn't exist yet
-            if (verifyError?.response?.status === 404) {
+            const axiosError = verifyError as AxiosError;
+            if (axiosError?.response?.status === 404) {
               console.warn("Auth verification endpoint not found, using Firebase auth only");
-              // Still set the user to keep the app functional even without the verify endpoint
               setUser(user);
             } else {
               setError("Authentication verification failed. Please try again.");
             }
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("Error getting ID token:", error);
           setError("Authentication error. Please try again.");
         }
@@ -69,16 +69,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async (): Promise<User> => {
+  const signInWithGoogle = async (): Promise<User | null> => {
     try {
       setError(null);
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account' 
+      });
       const result = await signInWithPopup(auth, provider);
       return result.user;
-    } catch (error: any) {
-      console.error("Error signing in with Google:", error);
-      setError("Failed to sign in with Google. Please try again.");
-      throw error;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        const firebaseError = error as { code?: string };
+        
+        if (firebaseError.code === 'auth/popup-closed-by-user') {
+          setError("Sign-in was cancelled. Please try again when ready.");
+        } else if (firebaseError.code === 'auth/cancelled-popup-request') {
+          setError("Sign-in process was interrupted. Please try again.");
+        } else if (firebaseError.code === 'auth/popup-blocked') {
+          console.error("Error signing in with Google:", error);
+          setError("Sign-in popup was blocked. Please allow popups for this site and try again.");
+        } else {
+          console.error("Error signing in with Google:", error);
+          setError("Failed to sign in with Google. Please try again.");
+        }
+      } else {
+        console.error("Error signing in with Google:", error);
+        setError("Failed to sign in with Google. Please try again.");
+      }
+      
+      return null;
     }
   };
 
@@ -87,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError(null);
       await firebaseSignOut(auth);
       setUser(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error signing out:", error);
       setError("Failed to sign out. Please try again.");
       throw error;

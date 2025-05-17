@@ -60,8 +60,31 @@ const MemeCard: React.FC<MemeCardProps> = ({ memeId, index, type }) => {
     router.push(`/edit-meme?${queryParams}`);
   };
 
+  const ActionButtons = () => (
+    <>
+      <Button
+        onClick={handleDownload}
+        className="p-2 text-white shadow-md transition-colors duration-200 hover:translate-x-0 hover:translate-y-0"
+        aria-label="Download meme"
+      >
+        <Download size={20} />
+      </Button>
+      <Button
+        onClick={handleEdit}
+        className="p-2 text-white shadow-md transition-colors duration-200 hover:translate-x-0 hover:translate-y-0"
+        aria-label="Edit meme"
+      >
+        <Edit size={20} />
+      </Button>
+    </>
+  );
+
   return (
     <div className="relative border-2 border-border bg-white shadow-none hover:shadow-light p-3">
+      <div className="absolute top-5 right-5 hidden md:flex space-x-2">
+        <ActionButtons /> 
+      </div>
+
       {!imageLoaded && (
         <div className="w-full h-48 bg-white border flex items-center justify-center">
           <span className="font-semibold">
@@ -69,32 +92,22 @@ const MemeCard: React.FC<MemeCardProps> = ({ memeId, index, type }) => {
           </span>
         </div>
       )}
+
       <img
         src={memeId.uri || memeId.url}
         alt={`Meme image ${memeId.title || memeId.id}`}
         className={`w-full h-auto border ${imageLoaded ? "" : "hidden"}`}
         onLoad={() => setImageLoaded(true)}
       />
+
       <div className="mt-2 text-center font-bold text-shadow capitalize">
         {memeId?.title?.length > 20
           ? `${memeId.title.slice(0, 20)}...`
           : memeId.title}
       </div>
-      <div className="absolute top-5 right-5 flex space-x-2">
-        <Button
-          onClick={handleDownload}
-          className="p-2 text-white shadow-md transition-colors duration-200 hover:translate-x-0 hover:translate-y-0"
-          aria-label="Download meme"
-        >
-          <Download size={20} />
-        </Button>
-        <Button
-          onClick={handleEdit}
-          className="p-2 text-white shadow-md transition-colors duration-200 hover:translate-x-0 hover:translate-y-0"
-          aria-label="Edit meme"
-        >
-          <Edit size={20} />
-        </Button>
+
+      <div className="mt-3 flex justify-center space-x-2 md:hidden">
+        <ActionButtons />
       </div>
     </div>
   );

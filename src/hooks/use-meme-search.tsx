@@ -3,7 +3,6 @@ import { useDebounce } from "use-debounce";
 import axios from "axios";
 import { transformData } from "@/utils/transformData";
 
-// Define types for the hook
 export type MemeType = "gifs" | "pngs";
 
 export interface SearchMemeMemeData {

@@ -11,7 +11,11 @@ type HeroSearchFieldProps = {
   handleSubmit: (e: React.FormEvent) => void;
 };
 
-const HeroSearchField = ({ searchQuery, setSearchQuery, handleSubmit }: HeroSearchFieldProps) => {
+const HeroSearchField = ({
+  searchQuery,
+  setSearchQuery,
+  handleSubmit,
+}: HeroSearchFieldProps) => {
   return (
     <form
       onSubmit={handleSubmit}
@@ -36,7 +40,7 @@ const HeroSearchField = ({ searchQuery, setSearchQuery, handleSubmit }: HeroSear
       </div>
       <Button
         type="submit"
-      className=" px-8 bg-[#3300FF] hover:bg-[#3300FF]/90 text-white w-full md:w-auto cursor-pointer"
+        className=" px-8 bg-[#3300FF] hover:bg-[#3300FF]/90 text-white w-full md:w-auto cursor-pointer"
       >
         Search
       </Button>
