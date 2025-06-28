@@ -10,11 +10,12 @@ const EditMeme = () => {
 
   return (
     <div>
-      {type === "gifs" ? (
+      {type === "gifs" && (
         <>
           <GifTextOverlay gifURI={uri as string} />
         </>
-      ) : (
+      )}
+      {type === "pngs" && (
         <>
           <ImageTextOverlay imgURI={uri as string} />
         </>

@@ -17,7 +17,7 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "fabric": "^6.7.0",
+    "fabric": "5.3.0",
     "firebase": "^11.7.1",
     "gif-frames": "^1.0.1",
     "gifshot": "^0.4.5",
