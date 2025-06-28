@@ -14,11 +14,7 @@ import { Card } from "@/components/ui/card";
 import MemeEditorSkeleton from "./meme-editor-skeleton";
 import { useGifTextOverlay } from "@/hooks/use-gif-text-overlay";
 
-const GifTextOverlay = ({
-  gifURI = "https://media.tenor.com/hmDMrE1yMAkAAAAC/when-the-coding-when-the.gif",
-}: {
-  gifURI?: string;
-}) => {
+const GifTextOverlay = ({ gifURI }: { gifURI?: string }) => {
   const {
     textBoxes,
     canvasRef,

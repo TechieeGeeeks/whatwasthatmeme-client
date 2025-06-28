@@ -53,25 +53,18 @@ export const useGifTextOverlay = (gifURI?: string) => {
         return;
       }
 
-      console.log("Attempting to load GIF from URL:", gifURI);
-
       try {
         const frameData = await gifFrames({
           url: gifURI,
           frames: "all",
           outputType: "canvas",
         });
-        console.log(
-          "GIF frames loaded successfully:",
-          frameData.length,
-          "frames"
-        );
+
         setFrames(frameData);
 
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
-          console.log("GIF image loaded successfully");
           setGif(img);
           updateCanvasSize(img);
           setIsLoading(false);
@@ -85,7 +78,6 @@ export const useGifTextOverlay = (gifURI?: string) => {
         console.error("Error in loadGif:", error);
 
         try {
-          console.log("Attempting to load as regular image...");
           const response = await fetch(gifURI);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -93,7 +85,6 @@ export const useGifTextOverlay = (gifURI?: string) => {
           const blob = await response.blob();
           const img = new Image();
           img.onload = () => {
-            console.log("Image loaded successfully");
             setGif(img);
             setFrames([
               {
